@@ -1,11 +1,30 @@
 import { Box, Text, TextField, Image, Button } from '@skynexui/components';
 import React from 'react';
 import appConfig from '../config.json';
+import { createClient } from '@supabase/supabase-js'
+
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0MzMzNzQ4NCwiZXhwIjoxOTU4OTEzNDg0fQ.mUXY9O6qGdtdpKFpKGL389hn8G7329641lYztxa9Euw';
+const SUPABASE_URL = 'https://mqygebbwfmppdjdncxgr.supabase.co';
+const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
 
 export default function ChatPage() {
     const [mensagem, setMensagem] = React.useState();
     const [listaDeMensagens, setListaDeMensagens] = React.useState([]);
+    
+    React.useEffect(()=>{
+        supabaseClient
+            .from('mensagens')
+            .select('*')
+            .order('id', {ascending:false})
+            .then(({data}) =>{
+                console.log("Dados do Supabase: ", data);
+                setListaDeMensagens(data);
+            });
+        
+    },[]);
+    //useEffect: para coisas que não fazem parte do fluxo padrão, por padrão roda sempre se a página carrega
+    
     /*
     // Usuário
     - digita a mensagem no campo
@@ -19,15 +38,23 @@ export default function ChatPage() {
     */
     function handleNovaMensagem(novaMensagem) {
         const mensagem = {
-            texto: novaMensagem,
-            id: listaDeMensagens.length + 1,
-            de: 'carlaKremer'
+            de: 'carlaKremer',
+            texto: novaMensagem
+        };
 
-        }
-        setListaDeMensagens([
-            mensagem,
-            ...listaDeMensagens
-        ]);
+        supabaseClient
+            .from('mensagens')
+            .insert([
+                mensagem
+            ])
+            .then(({data})=>{
+                console.log('criando:',data)
+                setListaDeMensagens([
+                    data[0],
+                    ...listaDeMensagens
+                ]);
+            })
+
         setMensagem('');
     }
     return (
@@ -145,7 +172,7 @@ function Header() {
 }
 
 function MessageList(props) {
-    console.log('MessageList', props);
+    console.log(props);
     return (
         <Box
             tag="ul"
@@ -158,10 +185,10 @@ function MessageList(props) {
                 marginBottom: '16px',
             }}
         >
-            {props.mensagens.map((mensagens) => {
+            {props.mensagens.map((mensagem) => {
                 return (
                     <Text
-                        key={mensagens.id}
+                        key={mensagem.id}
                         tag="li"
                         styleSheet={{
                             borderRadius: '5px',
@@ -185,10 +212,10 @@ function MessageList(props) {
                                     display: 'inline-block',
                                     marginRight: '8px',
                                 }}
-                                src={`https://github.com/${mensagens.de}.png`}
+                                src={`https://github.com/${mensagem.de}.png`}
                             />
                             <Text tag="strong">
-                                {mensagens.de}
+                                {mensagem.de}
                             </Text>
                             <Text
                                 styleSheet={{
@@ -201,7 +228,7 @@ function MessageList(props) {
                                 {(new Date().toLocaleDateString())}
                             </Text>
                         </Box>
-                        {mensagens.texto}
+                        {mensagem.texto}
                     </Text>
                 )
             })}
