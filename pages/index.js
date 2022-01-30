@@ -58,9 +58,9 @@ import {useRouter} from "next/router";
               onSubmit={
                 function(infosDoEvento){
                   infosDoEvento.preventDefault();
-                  console.log("submeteu")
+                  // console.log("submeteu")
                   // window.location.href="/chat"
-                  roteamento.push("/chat");
+                  roteamento.push(`/chat?username=${username}`);
                 }
 
               }
@@ -80,7 +80,7 @@ import {useRouter} from "next/router";
                     function(event)
                     { 
                       //Onde ta o valor?:
-                      console.log("usuario digitou", event.target.value)
+                      // console.log("usuario digitou", event.target.value)
                       //troca o valor da variavel
                       const valor = event.target.value;
                       //avisa a função que deve ser trocado
